@@ -1,0 +1,4 @@
+<div class="panel-card"><div class="card-header"><h3>قواعد الولاء</h3></div><div class="card-body">
+<form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><?= csrf_field() ?><input type="hidden" name="action" value="add_loyalty_rule"><input name="name_ar" placeholder="اسم القاعدة" required><input name="orders_count" type="number" min="1" placeholder="عدد الطلبات" required><input name="points_reward" type="number" min="0" placeholder="نقاط" required><button class="btn btn-primary">إضافة</button></form>
+<table class="data-table"><thead><tr><th>الاسم</th><th>الطلبات</th><th>النقاط</th><th>الحالة</th></tr></thead><tbody><?php foreach (($rules ?? []) as $rule): ?><tr><td><?= escape($rule['name_ar']) ?></td><td><?= (int)$rule['orders_count'] ?></td><td><?= (int)$rule['points_reward'] ?></td><td><?= !empty($rule['status']) ? 'نشط' : 'متوقف' ?></td></tr><?php endforeach; ?></tbody></table>
+</div></div>

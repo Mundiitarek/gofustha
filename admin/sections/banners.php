@@ -1,0 +1,4 @@
+<div class="panel-card"><div class="card-header"><h3>البانرات</h3></div><div class="card-body">
+<form method="post" enctype="multipart/form-data" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><?= csrf_field() ?><input type="hidden" name="action" value="add_banner"><input name="title_ar" placeholder="عنوان"><input type="file" name="image"><button class="btn btn-primary">إضافة بانر</button></form>
+<table class="data-table"><thead><tr><th>#</th><th>العنوان</th><th>الحالة</th><th>حذف</th></tr></thead><tbody><?php foreach (($banners ?? []) as $b): ?><tr><td><?= (int)$b['id'] ?></td><td><?= escape($b['title_ar'] ?? '-') ?></td><td><?= !empty($b['status']) ? 'نشط' : 'مخفي' ?></td><td><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="delete_banner"><input type="hidden" name="banner_id" value="<?= (int)$b['id'] ?>"><button class="btn btn-sm">حذف</button></form></td></tr><?php endforeach; ?></tbody></table>
+</div></div>

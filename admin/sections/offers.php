@@ -1,0 +1,4 @@
+<div class="panel-card"><div class="card-header"><h3>العروض</h3></div><div class="card-body">
+<form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><?= csrf_field() ?><input type="hidden" name="action" value="add_offer"><input name="title_ar" placeholder="عنوان العرض" required><input name="discount_value" type="number" step="0.01" placeholder="قيمة الخصم" required><select name="discount_type"><option value="fixed">ثابت</option><option value="percentage">نسبة</option></select><button class="btn btn-primary">إضافة عرض</button></form>
+<table class="data-table"><thead><tr><th>العنوان</th><th>النوع</th><th>القيمة</th><th>الحالة</th></tr></thead><tbody><?php foreach (($offers ?? []) as $o): ?><tr><td><?= escape($o['title_ar']) ?></td><td><?= escape($o['discount_type']) ?></td><td><?= escape($o['discount_value']) ?></td><td><?= !empty($o['status']) ? 'نشط' : 'متوقف' ?></td></tr><?php endforeach; ?></tbody></table>
+</div></div>

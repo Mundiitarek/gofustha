@@ -10,6 +10,25 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/helpers.php';
 
+// توافق مع البيئات التي لم تُحدّث includes/auth.php بعد
+if (!function_exists('get_phone_lookup_candidates')) {
+    function get_phone_lookup_candidates($phone) {
+        $candidates = [];
+        $raw = trim((string)$phone);
+        $normalized = normalize_phone($raw);
+        $formatted = format_saudi_phone($raw);
+
+        foreach ([$raw, $normalized, $formatted] as $value) {
+            $value = trim((string)$value);
+            if ($value !== '') {
+                $candidates[] = $value;
+            }
+        }
+
+        return array_values(array_unique($candidates));
+    }
+}
+
 $message = '';
 $message_type = 'info';
 

@@ -156,6 +156,56 @@ function send_sms_actual($phone, $message) {
     }
 }
 
+/**
+ * بناء كل صيغ رقم الجوال المحتملة للبحث (لتوافق البيانات القديمة والجديدة)
+ */
+function get_phone_lookup_candidates($phone) {
+    $candidates = [];
+
+    $raw = trim((string)$phone);
+    $normalized = normalize_phone($raw);
+    $formatted = format_saudi_phone($raw);
+    $digits = preg_replace('/\D+/', '', $raw);
+
+    $add = function($value) use (&$candidates) {
+        $value = trim((string)$value);
+        if ($value !== '') {
+            $candidates[] = $value;
+        }
+    };
+
+    $add($raw);
+    $add($normalized);
+    $add($formatted);
+    $add($digits);
+
+    $saLocal = $digits;
+    if (str_starts_with($saLocal, '00966')) {
+        $saLocal = substr($saLocal, 5);
+    } elseif (str_starts_with($saLocal, '966')) {
+        $saLocal = substr($saLocal, 3);
+    }
+
+    if (str_starts_with($saLocal, '05')) {
+        $saLocal = substr($saLocal, 1);
+    }
+
+    $saLocal = ltrim($saLocal, '0');
+    if ($saLocal !== '' && !str_starts_with($saLocal, '5')) {
+        $saLocal = '5' . $saLocal;
+    }
+
+    if ($saLocal !== '') {
+        $add($saLocal);
+        $add('0' . $saLocal);
+        $add('+966' . $saLocal);
+        $add('966' . $saLocal);
+        $add('00966' . $saLocal);
+    }
+
+    return array_values(array_unique($candidates));
+}
+
 // =====================================================
 // دوال تسجيل الدخول للعملاء
 // =====================================================
@@ -167,6 +217,7 @@ function login_or_register_user($phone, $name = null, $remember_me = true) {
     global $db;
     
     $phone = format_saudi_phone($phone);
+    $phoneCandidates = get_phone_lookup_candidates($phone);
 
     // ضمان عدم تداخل جلسات لوحات التحكم مع جلسة العميل
     unset($_SESSION['admin_id'], $_SESSION['admin_name'], $_SESSION['admin_role'], $_SESSION['admin_login_time']);
@@ -174,7 +225,8 @@ function login_or_register_user($phone, $name = null, $remember_me = true) {
     unset($_SESSION['driver_id'], $_SESSION['driver_name'], $_SESSION['driver_login_time']);
     
     // البحث عن المستخدم
-    $user = db_fetch("SELECT * FROM users WHERE phone = ?", [$phone]);
+    $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
+    $user = db_fetch("SELECT * FROM users WHERE phone IN ($placeholders) LIMIT 1", $phoneCandidates);
     
     // إذا لم يكن موجوداً، ننشئ حساباً جديداً
     if (!$user) {
@@ -299,9 +351,11 @@ function logout_user() {
  * تسجيل دخول الأدمن
  */
 function login_admin($phone, $password) {
-    $phone = format_saudi_phone($phone);
+    $phoneCandidates = get_phone_lookup_candidates($phone);
+    $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
+    $params = array_merge($phoneCandidates, [1]);
     
-    $admin = db_fetch("SELECT * FROM admins WHERE phone = ? AND status = 1", [$phone]);
+    $admin = db_fetch("SELECT * FROM admins WHERE phone IN ($placeholders) AND status = ? LIMIT 1", $params);
     
     if (!$admin) {
         return ['success' => false, 'message' => 'رقم الجوال أو كلمة المرور غير صحيحة.'];
@@ -366,9 +420,10 @@ function logout_admin() {
  * تسجيل دخول التاجر
  */
 function login_vendor($phone, $password) {
-    $phone = format_saudi_phone($phone);
+    $phoneCandidates = get_phone_lookup_candidates($phone);
+    $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
     
-    $vendor = db_fetch("SELECT * FROM vendors WHERE phone = ?", [$phone]);
+    $vendor = db_fetch("SELECT * FROM vendors WHERE phone IN ($placeholders) LIMIT 1", $phoneCandidates);
     
     if (!$vendor) {
         return ['success' => false, 'message' => 'رقم الجوال أو كلمة المرور غير صحيحة.'];
@@ -428,9 +483,10 @@ function logout_vendor() {
  * تسجيل دخول المندوب
  */
 function login_driver($phone, $password) {
-    $phone = format_saudi_phone($phone);
+    $phoneCandidates = get_phone_lookup_candidates($phone);
+    $placeholders = implode(',', array_fill(0, count($phoneCandidates), '?'));
     
-    $driver = db_fetch("SELECT * FROM drivers WHERE phone = ?", [$phone]);
+    $driver = db_fetch("SELECT * FROM drivers WHERE phone IN ($placeholders) LIMIT 1", $phoneCandidates);
     
     if (!$driver) {
         return ['success' => false, 'message' => 'رقم الجوال أو كلمة المرور غير صحيحة.'];

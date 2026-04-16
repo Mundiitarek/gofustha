@@ -1,0 +1,4 @@
+<div class="panel-card"><div class="card-header"><h3>جوائز دولاب الحظ</h3></div><div class="card-body">
+<form method="post" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><?= csrf_field() ?><input type="hidden" name="action" value="add_wheel_reward"><input name="name_ar" placeholder="اسم الجائزة" required><input name="reward_value" type="number" step="0.01" placeholder="القيمة" required><input name="probability" type="number" step="0.01" min="0" max="100" placeholder="الاحتمال" required><button class="btn btn-primary">إضافة جائزة</button></form>
+<table class="data-table"><thead><tr><th>الجائزة</th><th>النوع</th><th>القيمة</th><th>الاحتمال</th></tr></thead><tbody><?php foreach (($rewards ?? []) as $rw): ?><tr><td><?= escape($rw['name_ar']) ?></td><td><?= escape($rw['reward_type']) ?></td><td><?= escape($rw['reward_value']) ?></td><td><?= escape($rw['probability']) ?>%</td></tr><?php endforeach; ?></tbody></table>
+</div></div>
